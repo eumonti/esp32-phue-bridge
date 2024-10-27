@@ -32,10 +32,8 @@ void setup() {
   sinricProInterface.setPowerStateCallback(std::bind(&BLEInterface::writePowerState, &bleInterface, _1));
   sinricProInterface.setBrightnessCallback(std::bind(&BLEInterface::writeBrightness, &bleInterface, _1));
 
-  // TODO: Send only last state if a burst of states is sent, otherwise the request will fail.
-  // Alternatively, update the state periodically
-  bleInterface.setPowerStateCallback(std::bind(&SPInterface::writePowerState, &sinricProInterface, _1));
-  bleInterface.setBrightnessCallback(std::bind(&SPInterface::writeBrightness, &sinricProInterface, _1));
+  bleInterface.setPowerStateCallback(std::bind(&SPInterface::updatePowerState, &sinricProInterface, _1));
+  bleInterface.setBrightnessCallback(std::bind(&SPInterface::updateBrightness, &sinricProInterface, _1));
 
   Serial.println("Setting up Sinric Pro...");
   sinricProInterface.init();

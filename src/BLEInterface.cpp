@@ -67,6 +67,22 @@ bool BLEInterface::writeBrightness(int brightness) {
   return true;
 }
 
+bool BLEInterface::readPowerState() {
+  if (pPowerCharacteristic == nullptr) {
+    Serial.println("Error: pPowerCharacteristic is nullptr");
+    return false;
+  }
+  return pPowerCharacteristic->readUInt8();
+}
+
+int BLEInterface::readBrightness() {
+  if (pBrightnessCharacteristic == nullptr) {
+    Serial.println("Error: pBrightnessCharacteristic is nullptr");
+    return 0;
+  }
+  return map(pBrightnessCharacteristic->readUInt8(), 1, 254, 1, 100);
+}
+
 bool BLEInterface::connectToServer() {
   Serial.print("Forming a connection to ");
   Serial.println(device->getAddress().toString().c_str());
@@ -146,5 +162,7 @@ void BLEInterface::loop() {
                              : "We have failed to connect to the server; there "
                                "is nothin more we will do.");
     doConnect = false;
+    powerStateCallback_(readPowerState());
+    brightnessCallback_(readBrightness());
   }
 }

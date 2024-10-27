@@ -12,6 +12,8 @@ class BLEInterface {
   bool writePowerState(bool state);
   bool writeBrightness(int brightness);
   void loop();
+  bool readPowerState();
+  int readBrightness();
 
  private:
   // BLE service UUIDs
@@ -36,21 +38,25 @@ class BLEInterface {
   std::function<bool(bool)> powerStateCallback_;
   std::function<bool(int)> brightnessCallback_;
 
+  /**
+   * @brief Callback for notify events.
+   * @param pBLERemoteCharacteristic
+   * @param pData
+   * @param length
+   * @param isNotify true if this is a notify, false if it is an indicate.
+   */
+
   void notifyCallback(BLERemoteCharacteristic *pBLERemoteCharacteristic,
                              uint8_t *pData, size_t length, bool isNotify) {
-    Serial.print("Notify callback for characteristic ");
-    Serial.print(pBLERemoteCharacteristic->getUUID().toString().c_str());
-    Serial.print(" of data length ");
-    Serial.println(length);
-    Serial.print("data: ");
-    Serial.println((String)(*pData));
     if (length != 1) {
       return;
     }
     if (pBLERemoteCharacteristic == pPowerCharacteristic) {
+      Serial.println("Power state notify: " + String(*pData));
       powerStateCallback_(*pData);
     } else if (pBLERemoteCharacteristic == pBrightnessCharacteristic) {
       int brightness = map(*pData, 1, 254, 1, 100);
+      Serial.println("Brightness notify: " + String(brightness));
       brightnessCallback_(brightness);
     }
   }
