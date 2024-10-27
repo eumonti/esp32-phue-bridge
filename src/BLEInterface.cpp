@@ -38,7 +38,15 @@ void BLEInterface::init() {
   pBLEScan->start(5, false);
 }
 
-bool BLEInterface::setPowerState(bool state) {
+void BLEInterface::setPowerStateCallback(std::function<bool(bool)> callback) {
+  powerStateCallback_ = callback;
+}
+
+void BLEInterface::setBrightnessCallback(std::function<bool(int)> callback) {
+  brightnessCallback_ = callback;
+}
+
+bool BLEInterface::writePowerState(bool state) {
   if (pPowerCharacteristic == nullptr) {
     Serial.println("Error: pPowerCharacteristic is nullptr");
     return false;
@@ -48,7 +56,7 @@ bool BLEInterface::setPowerState(bool state) {
   return true;
 }
 
-bool BLEInterface::setBrightness(int brightness) {
+bool BLEInterface::writeBrightness(int brightness) {
   if (pBrightnessCharacteristic == nullptr) {
     Serial.println("Error: pBrightnessCharacteristic is nullptr");
     return false;
@@ -115,14 +123,16 @@ bool BLEInterface::connectToServer() {
     Serial.println(value.c_str());
   }
 
+  using namespace std::placeholders;
+
   if (pPowerCharacteristic->canNotify()) {
-    Serial.println("POWER CHAR CAN NOTIFY");
-    pPowerCharacteristic->registerForNotify(notifyCallback);
+    Serial.println("Power charactristic can notify");
+    pPowerCharacteristic->registerForNotify(std::bind(&BLEInterface::notifyCallback, this, _1, _2, _3, _4));
   }
 
   if (pBrightnessCharacteristic->canNotify()) {
-    Serial.println("BRIGHTNESS CHAR CAN NOTIFY");
-    pBrightnessCharacteristic->registerForNotify(notifyCallback);
+    Serial.println("Brightness charactristic can notify");
+    pBrightnessCharacteristic->registerForNotify(std::bind(&BLEInterface::notifyCallback, this, _1, _2, _3, _4));
   }
 
   connected = true;

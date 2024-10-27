@@ -11,6 +11,8 @@ class SPInterface {
   void init();
   void setPowerStateCallback(std::function<bool(bool)> callback);
   void setBrightnessCallback(std::function<bool(int)> callback);
+  bool writePowerState(bool state);
+  bool writeBrightness(int brightness);
   void loop();
 
  private:
@@ -52,6 +54,18 @@ void SPInterface::setPowerStateCallback(std::function<bool(bool)> callback) {
 
 void SPInterface::setBrightnessCallback(std::function<bool(int)> callback) {
   brightnessCallback_ = callback;
+}
+
+bool SPInterface::writePowerState(bool state) {
+  lightState_.power = state;
+  SinricProDimSwitch &myLight = SinricPro[LIGHT_ID];
+  return myLight.sendPowerStateEvent(lightState_.power);
+}
+
+bool SPInterface::writeBrightness(int brightness) {
+  lightState_.brightness = brightness;
+  SinricProDimSwitch &myLight = SinricPro[LIGHT_ID];
+  return myLight.sendPowerLevelEvent(lightState_.brightness);
 }
 
 bool SPInterface::onPowerState(const String &deviceId, bool &state) {

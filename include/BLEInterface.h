@@ -7,8 +7,10 @@ class BLEInterface {
  public:
   BLEInterface();
   void init();
-  bool setPowerState(bool state);
-  bool setBrightness(int brightness);
+  void setPowerStateCallback(std::function<bool(bool)> callback);
+  void setBrightnessCallback(std::function<bool(int)> callback);
+  bool writePowerState(bool state);
+  bool writeBrightness(int brightness);
   void loop();
 
  private:
@@ -31,7 +33,10 @@ class BLEInterface {
   bool doConnect = false;
 
   bool connectToServer();
-  static void notifyCallback(BLERemoteCharacteristic *pBLERemoteCharacteristic,
+  std::function<bool(bool)> powerStateCallback_;
+  std::function<bool(int)> brightnessCallback_;
+
+  void notifyCallback(BLERemoteCharacteristic *pBLERemoteCharacteristic,
                              uint8_t *pData, size_t length, bool isNotify) {
     Serial.print("Notify callback for characteristic ");
     Serial.print(pBLERemoteCharacteristic->getUUID().toString().c_str());
@@ -39,6 +44,15 @@ class BLEInterface {
     Serial.println(length);
     Serial.print("data: ");
     Serial.println((String)(*pData));
+    if (length != 1) {
+      return;
+    }
+    if (pBLERemoteCharacteristic == pPowerCharacteristic) {
+      powerStateCallback_(*pData);
+    } else if (pBLERemoteCharacteristic == pBrightnessCharacteristic) {
+      int brightness = map(*pData, 1, 254, 1, 100);
+      brightnessCallback_(brightness);
+    }
   }
 
   class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
