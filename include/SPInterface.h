@@ -1,8 +1,8 @@
 #pragma once
 
 #define SINRICPRO_NOSSL  // Disable SSL because of ESP memory limitations
-#include "SinricPro.h"
-#include <SinricProLight.h>
+#include <SinricPro.h>
+#include <SinricProDimSwitch.h>
 #include "sinric_secrets.h"
 
 class SPInterface {
@@ -31,12 +31,12 @@ class SPInterface {
 void SPInterface::init() {
   using namespace std::placeholders;
   // Het a new Light device from SinricPro
-  SinricProLight &myLight = SinricPro[LIGHT_ID];
+  SinricProDimSwitch &myLight = SinricPro[LIGHT_ID];
 
   // set callback function to device
   myLight.onPowerState(std::bind(&SPInterface::onPowerState, this, _1, _2));
-  myLight.onBrightness(std::bind(&SPInterface::onBrightness, this,  _1, _2));
-  myLight.onAdjustBrightness(
+  myLight.onPowerLevel(std::bind(&SPInterface::onBrightness, this,  _1, _2));
+  myLight.onAdjustPowerLevel(
       std::bind(&SPInterface::onAdjustBrightness, this, _1, _2));
 
   // setup SinricPro
