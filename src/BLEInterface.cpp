@@ -12,7 +12,7 @@ void BLEInterface::init() {
 
   // Retrieve a Scanner and set the callback we want to use to be informed when
   // we have detected a new device.  Specify that we want active scanning and
-  // start the scan to run for 5 seconds.
+  // start the scan to run indefinitely (until we find the device and connect to it).
   BLEScan *pBLEScan = BLEDevice::getScan();
   pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks(
       [this](BLEAdvertisedDevice advertisedDevice) {
@@ -35,7 +35,7 @@ void BLEInterface::init() {
   pBLEScan->setWindow(49);
   pBLEScan->setActiveScan(true);
   Serial.println("STARTING BLE SCAN");
-  pBLEScan->start(5, false);
+  pBLEScan->start(0, false);
 }
 
 void BLEInterface::setPowerStateCallback(std::function<bool(bool)> callback) {
@@ -91,7 +91,13 @@ bool BLEInterface::connectToServer() {
   BLEClient *pClient = BLEDevice::createClient();
   Serial.println(" - Created client");
 
-  // pClient->setClientCallbacks(new MyClientCallback());
+  pClient->setClientCallbacks(new MyClientCallback(
+      []() { Serial.println("BLE Client Connected"); },
+      [this]() {
+        connected = false;
+        Serial.println("BLE Disconnected. Rebooting ESP to reconnect...");
+        ESP.restart();
+      }));
 
   // Connect to the remote BLE Server.
   pClient->connect(device);  // if you pass BLEAdvertisedDevice instead of
@@ -143,12 +149,14 @@ bool BLEInterface::connectToServer() {
 
   if (pPowerCharacteristic->canNotify()) {
     Serial.println("Power charactristic can notify");
-    pPowerCharacteristic->registerForNotify(std::bind(&BLEInterface::notifyCallback, this, _1, _2, _3, _4));
+    pPowerCharacteristic->registerForNotify(
+        std::bind(&BLEInterface::notifyCallback, this, _1, _2, _3, _4));
   }
 
   if (pBrightnessCharacteristic->canNotify()) {
     Serial.println("Brightness charactristic can notify");
-    pBrightnessCharacteristic->registerForNotify(std::bind(&BLEInterface::notifyCallback, this, _1, _2, _3, _4));
+    pBrightnessCharacteristic->registerForNotify(
+        std::bind(&BLEInterface::notifyCallback, this, _1, _2, _3, _4));
   }
 
   connected = true;

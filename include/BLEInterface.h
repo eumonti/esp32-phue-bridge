@@ -47,7 +47,7 @@ class BLEInterface {
    */
 
   void notifyCallback(BLERemoteCharacteristic *pBLERemoteCharacteristic,
-                             uint8_t *pData, size_t length, bool isNotify) {
+                      uint8_t *pData, size_t length, bool isNotify) {
     if (length != 1) {
       return;
     }
@@ -74,14 +74,19 @@ class BLEInterface {
       callback_(advertisedDevice);
     }
   };
+
+  class MyClientCallback : public BLEClientCallbacks {
+   public:
+    MyClientCallback(std::function<void()> &&onConnect,
+                     std::function<void()> &&onDisconnect)
+        : onConnect_(std::move(onConnect)),
+          onDisconnect_(std::move(onDisconnect)) {}
+
+   private:
+    std::function<void()> onConnect_;
+    std::function<void()> onDisconnect_;
+    void onConnect(BLEClient *pclient) { onConnect_(); }
+
+    void onDisconnect(BLEClient *pclient) { onDisconnect_(); }
+  };
 };
-
-  //   class MyClientCallback : public BLEClientCallbacks {
-  //     void onConnect(BLEClient *pclient) {}
-
-  //     void onDisconnect(BLEClient *pclient) {
-  //       connected = false;
-  //       Serial.println("BLE Disconnected");
-  //     }
-  //   };
-  // };
