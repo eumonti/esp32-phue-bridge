@@ -38,23 +38,25 @@ void BLEInterface::init() {
   pBLEScan->start(5, false);
 }
 
-void BLEInterface::setPowerState(bool state) {
+bool BLEInterface::setPowerState(bool state) {
   if (pPowerCharacteristic == nullptr) {
     Serial.println("Error: pPowerCharacteristic is nullptr");
-    return;
+    return false;
   }
   uint8_t value = state ? 0x01 : 0x00;
   pPowerCharacteristic->writeValue(value);
+  return true;
 }
 
-void BLEInterface::setBrightness(int brightness) {
+bool BLEInterface::setBrightness(int brightness) {
   if (pBrightnessCharacteristic == nullptr) {
     Serial.println("Error: pBrightnessCharacteristic is nullptr");
-    return;
+    return false;
   }
   uint8_t value = map(brightness, 1, 100, 1, 254);
   Serial.println("Setting brightness to " + String(value));
   pBrightnessCharacteristic->writeValue(value);
+  return true;
 }
 
 bool BLEInterface::connectToServer() {

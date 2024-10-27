@@ -7,8 +7,8 @@ class BLEInterface {
  public:
   BLEInterface();
   void init();
-  void setPowerState(bool state);
-  void setBrightness(int brightness);
+  bool setPowerState(bool state);
+  bool setBrightness(int brightness);
   void loop();
 
  private:

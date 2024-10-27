@@ -9,8 +9,8 @@ class SPInterface {
  public:
   SPInterface() = default;
   void init();
-  void setPowerStateCallback(std::function<void(bool)> callback);
-  void setBrightnessCallback(std::function<void(int)> callback);
+  void setPowerStateCallback(std::function<bool(bool)> callback);
+  void setBrightnessCallback(std::function<bool(int)> callback);
   void loop();
 
  private:
@@ -23,8 +23,8 @@ class SPInterface {
   bool onBrightness(const String &deviceId, int &brightness);
   bool onAdjustBrightness(const String &deviceId, int brightnessDelta);
 
-  std::function<void(bool)> powerStateCallback_;
-  std::function<void(int)> brightnessCallback_;
+  std::function<bool(bool)> powerStateCallback_;
+  std::function<bool(int)> brightnessCallback_;
 };
 
 
@@ -46,20 +46,17 @@ void SPInterface::init() {
   SinricPro.begin(APP_KEY, APP_SECRET);
 }
 
-void SPInterface::setPowerStateCallback(std::function<void(bool)> callback) {
+void SPInterface::setPowerStateCallback(std::function<bool(bool)> callback) {
   powerStateCallback_ = callback;
 }
 
-void SPInterface::setBrightnessCallback(std::function<void(int)> callback) {
+void SPInterface::setBrightnessCallback(std::function<bool(int)> callback) {
   brightnessCallback_ = callback;
 }
 
 bool SPInterface::onPowerState(const String &deviceId, bool &state) {
   lightState_.power = state;
-  powerStateCallback_(lightState_.power);
-  Serial.printf("Device %s power turned %s \r\n", deviceId.c_str(),
-                state ? "on" : "off");
-  return true;
+  return powerStateCallback_(lightState_.power);
 }
 
 bool SPInterface::onBrightness(const String &deviceId, int &brightness) {
@@ -69,10 +66,7 @@ bool SPInterface::onBrightness(const String &deviceId, int &brightness) {
   } else if (lightState_.brightness < 1) {
     lightState_.brightness = 1;
   }
-  brightnessCallback_(lightState_.brightness);
-  Serial.printf("Device %s brightness level changed to %d\n",
-                deviceId.c_str(), brightness);
-  return true;
+  return brightnessCallback_(lightState_.brightness);
 }
 
 bool SPInterface::onAdjustBrightness(const String &deviceId,
@@ -83,10 +77,7 @@ bool SPInterface::onAdjustBrightness(const String &deviceId,
   } else if (lightState_.brightness < 1) {
     lightState_.brightness = 1;
   }
-  brightnessCallback_(lightState_.brightness);
-  Serial.printf("Device %s brightness level changed by %d\nNew value: %d",
-                deviceId.c_str(), brightnessDelta, lightState_.brightness);
-  return true;
+  return brightnessCallback_(lightState_.brightness);
 }
 
 void SPInterface::loop() { SinricPro.handle(); }
