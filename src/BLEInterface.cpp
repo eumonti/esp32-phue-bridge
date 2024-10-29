@@ -61,8 +61,9 @@ bool BLEInterface::writeBrightness(int brightness) {
     Serial.println("Error: pBrightnessCharacteristic is nullptr");
     return false;
   }
-  uint8_t value = map(brightness, 1, 100, 1, 254);
-  Serial.println("Setting brightness to " + String(value));
+  uint8_t value = brightnessPercentageToByte(brightness);
+  Serial.println("Setting brightness to " + String(brightness) + "% (" +
+                 String(value) + ")");
   pBrightnessCharacteristic->writeValue(value);
   return true;
 }
@@ -80,7 +81,7 @@ int BLEInterface::readBrightness() {
     Serial.println("Error: pBrightnessCharacteristic is nullptr");
     return 0;
   }
-  return map(pBrightnessCharacteristic->readUInt8(), 1, 254, 1, 100);
+  return brightnessByteToPercentage(pBrightnessCharacteristic->readUInt8());
 }
 
 bool BLEInterface::connectToServer() {

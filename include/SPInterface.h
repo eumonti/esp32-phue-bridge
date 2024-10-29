@@ -5,6 +5,7 @@
 #include <SinricProDimSwitch.h>
 
 #include "sinric_secrets.h"
+#include "utils.h"
 
 class SPInterface {
  public:
@@ -83,23 +84,14 @@ bool SPInterface::onPowerState(const String &deviceId, bool &state) {
 }
 
 bool SPInterface::onBrightness(const String &deviceId, int &brightness) {
-  lightState_.brightness = brightness;
-  if (lightState_.brightness > 100) {
-    lightState_.brightness = 100;
-  } else if (lightState_.brightness < 1) {
-    lightState_.brightness = 1;
-  }
+  lightState_.brightness = clamp(brightness, 1, 100);
   return brightnessCallback_(lightState_.brightness);
 }
 
 bool SPInterface::onAdjustBrightness(const String &deviceId,
                                      int brightnessDelta) {
-  lightState_.brightness += brightnessDelta;
-  if (lightState_.brightness > 100) {
-    lightState_.brightness = 100;
-  } else if (lightState_.brightness < 1) {
-    lightState_.brightness = 1;
-  }
+  int brightness = lightState_.brightness + brightnessDelta;
+  lightState_.brightness = clamp(brightness, 1, 100);
   return brightnessCallback_(lightState_.brightness);
 }
 

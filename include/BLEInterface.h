@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <BLEDevice.h>
+#include "utils.h"
 
 class BLEInterface {
  public:
@@ -55,8 +56,9 @@ class BLEInterface {
       Serial.println("Power state notify: " + String(*pData));
       powerStateCallback_(*pData);
     } else if (pBLERemoteCharacteristic == pBrightnessCharacteristic) {
-      int brightness = map(*pData, 1, 254, 1, 100);
-      Serial.println("Brightness notify: " + String(brightness));
+      int brightness = brightnessByteToPercentage(*pData);
+      Serial.println("Brightness notify: " + String(brightness) + "%" +
+                     " (" + String(*pData) + ")");
       brightnessCallback_(brightness);
     }
   }
