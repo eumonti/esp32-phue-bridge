@@ -148,7 +148,7 @@ bool BLEInterface::connectToServer() {
   using namespace std::placeholders;
 
   if (pPowerCharacteristic->canNotify()) {
-    Serial.println("Power charactristic can notify");
+    Serial.println("Power characteristic can notify");
     pPowerCharacteristic->registerForNotify(
         std::bind(&BLEInterface::notifyCallback, this, _1, _2, _3, _4));
   }
